@@ -1,0 +1,69 @@
+# 6개 추적 종목의 메타데이터.
+# 각 항목은 ingest 파이프라인과 RAG 메타데이터 필터에서 공통 키로 사용된다.
+
+universe:
+  crypto:
+    - id: BTC-KRW
+      name: Bitcoin (KRW)
+      exchange: upbit
+      market: KRW-BTC
+      base: BTC
+      quote: KRW
+      lang: ko
+      news_keywords: ["비트코인", "bitcoin", "BTC"]
+    - id: ETH-KRW
+      name: Ethereum (KRW)
+      exchange: upbit
+      market: KRW-ETH
+      base: ETH
+      quote: KRW
+      lang: ko
+      news_keywords: ["이더리움", "ethereum", "ETH"]
+
+  kr_equity:
+    - id: "005930.KS"
+      name: 삼성전자
+      ticker_krx: "005930"
+      ticker_yf: "005930.KS"
+      sector: Semiconductors
+      currency: KRW
+      lang: ko
+      dart_corp_code: "00126380"
+      news_keywords: ["삼성전자", "Samsung Electronics", "메모리", "HBM"]
+    - id: "000660.KS"
+      name: SK하이닉스
+      ticker_krx: "000660"
+      ticker_yf: "000660.KS"
+      sector: Semiconductors
+      currency: KRW
+      lang: ko
+      dart_corp_code: "00164779"
+      news_keywords: ["SK하이닉스", "SK Hynix", "HBM", "DRAM"]
+
+  us_equity:
+    - id: GOOGL
+      name: Alphabet Inc. Class A
+      ticker_yf: GOOGL
+      sector: Communication Services
+      currency: USD
+      lang: en
+      sec_cik: "0001652044"
+      news_keywords: ["Alphabet", "Google", "GOOGL"]
+    - id: NVDA
+      name: NVIDIA Corporation
+      ticker_yf: NVDA
+      sector: Semiconductors
+      currency: USD
+      lang: en
+      sec_cik: "0001045810"
+      news_keywords: ["NVIDIA", "NVDA", "GPU", "AI accelerator"]
+
+# 기본 시간대 (보고서 표시 기준)
+display_timezone: Asia/Seoul
+
+# 데이터 보존 기간 (일봉 기준)
+history:
+  daily_years: 5
+  intraday_days: 365
+  intraday_interval: "1m"
+  intraday_interval_kr: "1m"

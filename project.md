@@ -33,11 +33,11 @@
 - **Mac M5 Max / 128GB Unified Memory**
 - 베이스 모델: `qwen3.6-35b-a3b-uncensored-hauhaucs-aggressive`
   (Qwen3 계열 MoE, 총 ~35B / active ~3B 추정 → 메모리 여유 충분)
-- 추론 백엔드(우선순위)
-  1. **MLX-LM** (Apple Silicon 네이티브, LoRA 파인튜닝까지 가능)
-  2. **llama.cpp** (GGUF Q4_K_M / Q5_K_M, Ollama 또는 LM Studio 경유)
-  3. (옵션) **vLLM**은 Mac에서 미지원 → 사용 안 함
-- 양자화 권장: MLX 4bit 또는 GGUF Q5_K_M
+- **추론 백엔드: LM Studio** (OpenAI 호환 로컬 HTTP 서버, 기본 `http://localhost:1234/v1`)
+  - 장점: GUI 로 모델 관리, OpenAI SDK 그대로 재사용, M5 Max GGUF 추론 안정적
+  - 클라이언트: `openai` Python SDK 로 `base_url` 만 LM Studio 로 지정
+  - (참고) Phase 6 LoRA 파인튜닝이 필요해질 경우, MLX-LM 을 별도 도구로 추가 도입 검토
+- 양자화 권장: GGUF Q5_K_M 또는 Q4_K_M (LM Studio 에서 직접 다운로드)
 - 임베딩 모델: `BAAI/bge-m3` (다국어) 또는 `intfloat/multilingual-e5-large`
 - 리랭커: `BAAI/bge-reranker-v2-m3`
 - 벡터 DB: **Qdrant**(로컬 도커) 또는 **Chroma**(파일 기반, 초기 권장)
@@ -175,13 +175,14 @@ tools:
 ### Phase 6 — (선택) 파인튜닝 (2~4주)
 필요성: RAG로 80%를 처리하고, 그래도 부족한 한국어 금융 어휘·요약 스타일을 강화하고 싶을 때만.
 
-- **MLX-LM LoRA SFT**
+- LM Studio 는 추론 전용이므로 파인튜닝은 별도 도구로 진행 (MLX-LM 또는 Unsloth)
+- **LoRA SFT**
   - 데이터: 위 코퍼스로부터 `(질문, 근거, 답변)` 삼중쌍 자동 합성 + 수동 보정 1,000~3,000개
   - 형식: ChatML, 시스템 프롬프트 고정
 - **DPO**
   - 동일 질문에 대해 "근거 인용 O / X" 두 답변 쌍을 만들고 인용 있는 쪽을 선호로
-- 메모리: 35B-A3B MoE는 4bit LoRA가 128GB에서 여유 (배치 1, ctx 4k 기준)
-- 산출물: `finetune/adapters/inv-v1/`
+- 메모리: 35B-A3B MoE 4bit LoRA 는 128GB 에서 여유 (배치 1, ctx 4k 기준)
+- 산출물: GGUF 로 머지·재양자화 후 LM Studio 에 로드 (`finetune/adapters/inv-v1/`)
 
 ### Phase 7 — 백테스팅 & 평가 (1주)
 - **퀀트 백테스트**: `vectorbt` 또는 `backtrader` — LLM이 제시한 규칙을 DSL로 받아 검증
@@ -244,13 +245,14 @@ tools:
 
 ## 8. 첫 주 체크리스트 (바로 실행 가능)
 
-- [ ] `uv venv && uv add mlx-lm transformers sentence-transformers chromadb duckdb pykrx finance-datareader yfinance feedparser python-dotenv tenacity httpx`
-- [ ] `configs/tickers.yaml` 작성 (6종목 메타)
+- [ ] `uv sync` (pyproject 기준: openai, sentence-transformers, chromadb, duckdb, pyupbit, pykrx, finance-datareader, yfinance, feedparser, httpx, tenacity, python-dotenv, pyyaml, rich)
+- [ ] LM Studio 설치 → 모델 다운로드/로드 → Local Server 시작
+- [ ] `.env` 작성 후 `scripts/smoke_test_lmstudio.py` 로 한 번 통과
+- [ ] `configs/tickers.yaml` 검증 (6종목 메타)
 - [ ] `ingest/upbit.py`: 최근 5년 일봉·1년 1분봉 다운로드 → DuckDB
 - [ ] `ingest/krx.py`, `ingest/us_equity.py`: 동일 작업
 - [ ] `corpus/papers/`에 arXiv q-fin 최신 100편 다운로드 스크립트
 - [ ] `rag/embed.py` + `rag/index.py`로 Chroma 인덱스 v0 생성
-- [ ] MLX-LM으로 베이스 모델 + RAG 컨텍스트 묶어 "삼성전자 최근 분기 실적 요약" 질문 한 번 통과시키기
 
 ---
 
@@ -262,8 +264,8 @@ tools:
 - FRED API (https://fred.stlouisfed.org/docs/api/fred/)
 - 한국은행 ECOS (https://ecos.bok.or.kr/api/)
 - HuggingFace Datasets — `PIXIU`, `FinGPT`, `FinanceBench`
-- MLX-LM (https://github.com/ml-explore/mlx-examples)
-- llama.cpp / Ollama
+- LM Studio (https://lmstudio.ai) — OpenAI 호환 로컬 서버 모드
+- OpenAI Python SDK (https://github.com/openai/openai-python) — `base_url` 만 LM Studio 로 지정
 
 ---
 

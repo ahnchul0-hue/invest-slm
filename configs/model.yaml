@@ -1,0 +1,39 @@
+# 추론 / 임베딩 모델 설정.
+# 추론은 LM Studio 의 OpenAI 호환 로컬 서버를 통해 호출한다.
+
+llm:
+  backend: lm_studio
+  lm_studio:
+    base_url_env: LMSTUDIO_BASE_URL      # .env 에서 읽음 (기본 http://localhost:1234/v1)
+    api_key_env: LMSTUDIO_API_KEY
+    model_env: LMSTUDIO_MODEL            # LM Studio 에 로드된 모델 식별자
+    request_timeout_sec: 120
+  generation:
+    max_tokens: 1024
+    temperature: 0.4
+    top_p: 0.9
+    presence_penalty: 0.0
+    frequency_penalty: 0.0
+
+embedding:
+  # LM Studio 의 임베딩 엔드포인트를 쓸 수도 있으나, 다국어 품질은
+  # bge-m3 를 로컬에서 직접 돌리는 편이 안정적.
+  model: BAAI/bge-m3
+  device: mps                          # Apple Silicon MPS
+  batch_size: 32
+  normalize: true
+
+reranker:
+  enabled: true
+  model: BAAI/bge-reranker-v2-m3
+  top_n: 8
+
+rag:
+  vector_store: chroma                 # chroma | qdrant
+  chroma_path: ./store/chroma
+  chunk_size: 1000                     # tokens
+  chunk_overlap: 150
+  hybrid: true                         # BM25 + dense
+  top_k_dense: 20
+  top_k_bm25: 20
+  final_k: 6
