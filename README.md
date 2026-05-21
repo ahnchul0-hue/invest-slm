@@ -40,12 +40,35 @@ uv run python scripts/smoke_test_lmstudio.py
 
 응답이 정상 출력되면 Phase 1 완료.
 
+## 시세 인제스트 (Phase 2)
+
+6개 자산의 일봉·분봉을 `store/prices.duckdb` 에 적재합니다 (증분 업데이트).
+
+```bash
+# 전체
+uv run python scripts/ingest_all.py
+
+# 자산군 선택
+uv run python scripts/ingest_all.py --only crypto
+uv run python scripts/ingest_all.py --only kr_equity,us_equity
+```
+
+데이터 소스:
+- 가상화폐 (BTC/ETH KRW): Upbit 공개 시세 API (pyupbit)
+- 국내 주식 (005930, 000660): 일봉 pykrx + 분봉 yfinance (KRX 무료 분봉 미제공)
+- 해외 주식 (GOOGL, NVDA): yfinance
+
+저장소 점검:
+```bash
+uv run python -c "import duckdb; con=duckdb.connect('store/prices.duckdb'); print(con.execute('SELECT ticker_id, interval, COUNT(*) FROM prices GROUP BY 1,2 ORDER BY 1,2').fetchall())"
+```
+
 ## 디렉터리
 
 ```
 configs/        모델·종목·리스크 규칙 설정 (YAML)
-scripts/        단발성 유틸리티 (스모크 테스트, 인덱스 재빌드 등)
-ingest/         (예정) 시세·공시·뉴스 수집
+scripts/        단발성 유틸리티 (스모크 테스트, 통합 인제스트 등)
+ingest/         시세 수집 (Upbit / pykrx + yfinance / yfinance) + DuckDB 스키마
 corpus/         (예정) 도서·논문·리포트 코퍼스
 store/          (gitignored) 로컬 데이터 저장소 (DuckDB / Parquet / Chroma)
 rag/            (예정) 청크·임베딩·검색
@@ -59,7 +82,7 @@ ui/             (예정) Gradio / Open WebUI
 
 - [x] Phase 0 — 면책·범위 정의 (`project.md`)
 - [x] Phase 1 — 환경 스캐폴딩 (LM Studio + configs + 스모크 테스트)
-- [ ] Phase 2 — 데이터 수집 파이프라인
+- [x] Phase 2 — 데이터 수집 파이프라인 (시세) ← *공시·뉴스·거시는 후속*
 - [ ] Phase 3 — 코퍼스 구축
 - [ ] Phase 4 — RAG 인덱스
 - [ ] Phase 5 — 에이전트 / 도구
