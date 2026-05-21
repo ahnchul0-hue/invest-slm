@@ -1,0 +1,36 @@
+# 추론 / 임베딩 모델 설정. 경로는 로컬 HF 캐시 또는 MLX 변환 폴더를 가리킨다.
+
+llm:
+  # 기본: MLX 4bit (M5 Max 권장). GGUF 경로는 fallback.
+  backend: mlx                         # mlx | llama_cpp
+  mlx:
+    # 예: ~/models/Qwen3-30B-A3B-mlx-4bit  (사용자가 직접 변환/다운로드)
+    model_path: ""
+    max_tokens: 1024
+    temperature: 0.4
+    top_p: 0.9
+  llama_cpp:
+    model_path: ""                     # 예: ~/models/qwen3-30b-a3b-q5_k_m.gguf
+    n_ctx: 16384
+    n_gpu_layers: -1
+
+embedding:
+  model: BAAI/bge-m3
+  device: mps                          # Apple Silicon MPS
+  batch_size: 32
+  normalize: true
+
+reranker:
+  enabled: true
+  model: BAAI/bge-reranker-v2-m3
+  top_n: 8
+
+rag:
+  vector_store: chroma                 # chroma | qdrant
+  chroma_path: ./store/chroma
+  chunk_size: 1000                     # tokens
+  chunk_overlap: 150
+  hybrid: true                         # BM25 + dense
+  top_k_dense: 20
+  top_k_bm25: 20
+  final_k: 6

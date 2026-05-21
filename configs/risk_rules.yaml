@@ -1,0 +1,35 @@
+# 개인 리스크 규칙. 에이전트는 답변을 생성하기 전에 이 규칙을 컨텍스트에 주입하고
+# 위반 가능성이 있는 시나리오를 명시적으로 경고해야 한다.
+# 값은 사용자가 자유롭게 수정한다 — 아래는 보수적 기본값 예시.
+
+portfolio:
+  base_currency: KRW
+  total_capital_krw: 0           # 사용자가 직접 채울 것. 0이면 비중 계산 비활성화.
+
+position_limits:
+  max_position_pct_per_asset: 20     # 단일 자산 최대 비중 (%)
+  max_sector_pct: 40                  # 동일 섹터(반도체 등) 합산 최대 비중 (%)
+  max_crypto_total_pct: 25            # 가상화폐 합산 최대 비중 (%)
+  min_cash_pct: 10                    # 항상 유지할 현금 비중 (%)
+
+drawdown:
+  per_position_stop_loss_pct: 15      # 종목 단위 손절선
+  portfolio_max_drawdown_pct: 20      # 포트폴리오 최대 허용 낙폭
+  trailing_stop_pct: 10               # 고점 대비 추적 손절
+
+entry_rules:
+  min_holding_period_days: 5          # 단타 방지 (가상화폐도 동일 적용)
+  averaging_down_max_steps: 2         # 물타기 횟수 제한
+
+market_regime:
+  # 거시 컨디션 악화 시 신규 진입 자제 권고
+  vix_caution_above: 25
+  kr_base_rate_caution_above: 4.0
+  btc_funding_rate_caution_abs: 0.05
+
+advice_style:
+  # LLM 출력 강제 형식
+  require_sources: true               # 모든 주장에 출처 인용
+  require_timestamps: true            # 숫자에는 시점 명시
+  forbid_definitive_recommendation: true   # "매수하세요/매도하세요" 단정 금지
+  output_format: scenarios            # scenarios | bullet | narrative
